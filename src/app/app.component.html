@@ -1,0 +1,65 @@
+<main class="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-5 py-6">
+  <header class="flex flex-col gap-4 border-b border-slate-200 pb-5 md:flex-row md:items-center md:justify-between">
+    <div>
+      <p class="text-sm font-medium uppercase tracking-wide text-teal-700">Electron + Angular + SQLite</p>
+      <h1 class="mt-1 text-3xl font-semibold text-slate-950">Calendario de tarefas</h1>
+    </div>
+
+    <button
+      class="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-teal-200"
+      type="button"
+      (click)="isModalOpen = true"
+    >
+      <span class="text-lg leading-none">+</span>
+      Criar tarefa
+    </button>
+  </header>
+
+  <p *ngIf="errorMessage" class="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+    {{ errorMessage }}
+  </p>
+
+  <section class="grid flex-1 gap-5 lg:grid-cols-[1fr_360px]">
+    <app-calendar
+      [todos]="todos"
+      [selectedDate]="selectedDate"
+      [visibleMonth]="visibleMonth"
+      (dateSelected)="selectDate($event)"
+      (monthChanged)="changeMonth($event)"
+      (todayRequested)="goToToday()"
+    />
+
+    <aside class="flex min-h-0 flex-col rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-200 p-5">
+        <p class="text-sm font-medium uppercase tracking-wide text-slate-500">Dia selecionado</p>
+        <h2 class="mt-1 text-xl font-semibold text-slate-950">{{ selectedDateTitle }}</h2>
+      </div>
+
+      <div class="min-h-0 flex-1 overflow-y-auto p-5">
+        <app-task-list
+          [todos]="selectedTodos"
+          emptyText="Nao existem tarefas neste dia."
+          (toggleTodo)="toggleTodo($event)"
+          (deleteTodo)="deleteTodo($event)"
+        />
+      </div>
+
+      <div class="border-t border-slate-200 p-5">
+        <p class="mb-3 text-sm font-medium uppercase tracking-wide text-slate-500">Sem data</p>
+        <app-task-list
+          [todos]="undatedTodos"
+          emptyText="Nao existem tarefas sem data."
+          (toggleTodo)="toggleTodo($event)"
+          (deleteTodo)="deleteTodo($event)"
+        />
+      </div>
+    </aside>
+  </section>
+</main>
+
+<app-task-modal
+  [isOpen]="isModalOpen"
+  [selectedDate]="selectedDate"
+  (closeModal)="isModalOpen = false"
+  (createTodo)="createTodo($event)"
+/>
