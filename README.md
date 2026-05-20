@@ -50,3 +50,9 @@ Angular Component
 - O Angular nao usa Node diretamente.
 - O `electron/preload.js` expoe uma API controlada com `contextBridge`.
 - O IPC e o limite seguro entre interface e sistema.
+
+## Apoio para apresentacao
+
+- `docs/presentation-guide.md`: roteiro de 10 minutos.
+- `docs/question-bank.md`: perguntas provaveis e respostas.
+- `docs/demo-checklist.md`: checklist para a demo.

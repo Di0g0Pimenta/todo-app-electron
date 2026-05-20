@@ -7,6 +7,7 @@ const { normalizeTodoInput, normalizeTodoUpdate } = require("./shared/todo-valid
 let db;
 
 function mapTodo(row) {
+  // A DB usa snake_case; a interface Angular recebe camelCase.
   return {
     id: row.id,
     name: row.name,
@@ -22,6 +23,7 @@ function getDb() {
     fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
     db = new Database(dbPath);
+    // WAL melhora a fiabilidade para escrita/leitura local no SQLite.
     db.pragma("journal_mode = WAL");
     db.pragma("foreign_keys = ON");
   }
@@ -30,6 +32,7 @@ function getDb() {
 }
 
 function initDatabase() {
+  // A tabela e criada no arranque, por isso a app funciona numa pasta limpa.
   getDb().exec(`
     CREATE TABLE IF NOT EXISTS todos (
       id        INTEGER PRIMARY KEY AUTOINCREMENT,
