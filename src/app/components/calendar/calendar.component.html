@@ -1,24 +1,24 @@
-<div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+<div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
   <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div>
-      <h2 class="text-2xl font-semibold text-slate-950">{{ monthTitle }}</h2>
-      <p class="mt-1 text-sm text-slate-500">{{ calendarSummary }}</p>
+      <h2 class="text-2xl font-semibold text-slate-950 dark:text-slate-50">{{ monthTitle }}</h2>
+      <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ calendarSummary }}</p>
     </div>
 
     <div class="flex items-center gap-2">
-      <button class="grid h-10 w-10 place-items-center rounded-lg border border-slate-200 text-xl text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-slate-200" type="button" aria-label="Mes anterior" (click)="monthChanged.emit(-1)">
+      <button class="grid h-10 w-10 place-items-center rounded-lg border border-slate-200 text-xl text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-slate-200 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700 dark:focus:ring-slate-600" type="button" aria-label="Mes anterior" (click)="monthChanged.emit(-1)">
         &lsaquo;
       </button>
-      <button class="h-10 rounded-lg border border-slate-200 px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-slate-200" type="button" (click)="todayRequested.emit()">
+      <button class="h-10 rounded-lg border border-slate-200 px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-slate-200 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700 dark:focus:ring-slate-600" type="button" (click)="todayRequested.emit()">
         Hoje
       </button>
-      <button class="grid h-10 w-10 place-items-center rounded-lg border border-slate-200 text-xl text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-slate-200" type="button" aria-label="Mes seguinte" (click)="monthChanged.emit(1)">
+      <button class="grid h-10 w-10 place-items-center rounded-lg border border-slate-200 text-xl text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-slate-200 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700 dark:focus:ring-slate-600" type="button" aria-label="Mes seguinte" (click)="monthChanged.emit(1)">
         &rsaquo;
       </button>
     </div>
   </div>
 
-  <div class="grid grid-cols-7 border-b border-slate-200 pb-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-500">
+  <div class="grid grid-cols-7 border-b border-slate-200 pb-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-700 dark:text-slate-400">
     <span>Seg</span>
     <span>Ter</span>
     <span>Qua</span>
@@ -31,25 +31,30 @@
   <div class="calendar-grid mt-3">
     <button
       *ngFor="let day of days"
-      class="calendar-day flex flex-col rounded-lg border p-3 text-left transition focus:outline-none focus:ring-4 focus:ring-teal-100"
+      class="calendar-day flex flex-col rounded-lg border p-3 text-left transition focus:outline-none focus:ring-4 focus:ring-teal-100 dark:focus:ring-teal-900"
       type="button"
       [class.border-teal-700]="dayKey(day) === selectedDate"
       [class.bg-teal-50]="dayKey(day) === selectedDate"
+      [class.dark:bg-teal-950]="dayKey(day) === selectedDate"
       [class.ring-2]="dayKey(day) === selectedDate || isToday(day)"
       [class.ring-teal-700]="dayKey(day) === selectedDate"
       [class.ring-amber-400]="dayKey(day) !== selectedDate && isToday(day)"
       [class.text-slate-950]="isCurrentMonth(day)"
+      [class.dark:text-slate-50]="isCurrentMonth(day)"
       [class.text-slate-400]="!isCurrentMonth(day)"
+      [class.dark:text-slate-600]="!isCurrentMonth(day)"
       [class.shadow-sm]="dayTodos(day).length"
       [class.border-slate-200]="dayKey(day) !== selectedDate"
+      [class.dark:border-slate-700]="dayKey(day) !== selectedDate"
       [class.bg-white]="dayKey(day) !== selectedDate"
+      [class.dark:bg-slate-800]="dayKey(day) !== selectedDate"
       (click)="selectDate(day)"
     >
       <div class="flex items-start justify-between gap-2">
-        <span class="grid h-8 w-8 place-items-center rounded-full text-sm font-semibold" [class.bg-amber-100]="isToday(day)" [class.text-amber-800]="isToday(day)">
+        <span class="grid h-8 w-8 place-items-center rounded-full text-sm font-semibold" [class.bg-amber-100]="isToday(day)" [class.text-amber-800]="isToday(day)" [class.dark:bg-amber-900]="isToday(day)" [class.dark:text-amber-200]="isToday(day)">
           {{ day.getDate() }}
         </span>
-        <span *ngIf="dayTodos(day).length" class="rounded-full bg-teal-700 px-2 py-1 text-xs font-semibold text-white">
+        <span *ngIf="dayTodos(day).length" class="rounded-full bg-teal-700 px-2 py-1 text-xs font-semibold text-white dark:bg-teal-600">
           {{ dayTodos(day).length }}
         </span>
       </div>
@@ -59,14 +64,18 @@
           *ngFor="let todo of dayTodos(day).slice(0, 2)"
           class="truncate rounded-md px-2 py-1 text-xs font-medium"
           [class.bg-slate-100]="todo.done"
+          [class.dark:bg-slate-700]="todo.done"
           [class.text-slate-500]="todo.done"
+          [class.dark:text-slate-400]="todo.done"
           [class.line-through]="todo.done"
           [class.bg-teal-100]="!todo.done"
+          [class.dark:bg-teal-900]="!todo.done"
           [class.text-teal-900]="!todo.done"
+          [class.dark:text-teal-200]="!todo.done"
         >
           {{ todo.name }}
         </p>
-        <p *ngIf="dayTodos(day).length > 2" class="px-2 text-xs font-semibold text-slate-500">
+        <p *ngIf="dayTodos(day).length > 2" class="px-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
           +{{ dayTodos(day).length - 2 }} mais
         </p>
       </div>

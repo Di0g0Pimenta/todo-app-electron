@@ -19,10 +19,14 @@ export class AppComponent implements OnInit {
   visibleMonth = startOfMonth(new Date());
   isModalOpen = false;
   errorMessage = "";
+  isDarkMode = false;
 
   constructor(private readonly todoService: TodoService) {}
 
   async ngOnInit(): Promise<void> {
+    const saved = localStorage.getItem('darkMode');
+    this.isDarkMode = saved === 'true';
+    this.applyDarkMode();
     await this.loadTodos();
   }
 
@@ -80,6 +84,20 @@ export class AppComponent implements OnInit {
 
   selectDate(dateKey: string): void {
     this.selectedDate = dateKey;
+  }
+
+  toggleDarkMode(): void {
+    this.isDarkMode = !this.isDarkMode;
+    localStorage.setItem('darkMode', String(this.isDarkMode));
+    this.applyDarkMode();
+  }
+
+  private applyDarkMode(): void {
+    if (this.isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }
 
   private async loadTodos(): Promise<void> {

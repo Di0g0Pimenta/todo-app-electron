@@ -1,30 +1,30 @@
 <div class="space-y-3">
-  <p *ngIf="!todos.length" class="rounded-lg border border-dashed border-slate-300 px-4 py-6 text-center text-sm text-slate-500">
+  <p *ngIf="!todos.length" class="rounded-lg border border-dashed border-slate-300 px-4 py-6 text-center text-sm text-slate-500 dark:border-slate-600 dark:text-slate-400">
     {{ emptyText }}
   </p>
 
-  <article *ngFor="let todo of todos" class="task-card rounded-lg border border-slate-200 bg-slate-50 p-4">
+  <article *ngFor="let todo of todos" class="task-card rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-700/50">
     <div class="flex items-start gap-3">
       <input
-        class="mt-1 h-5 w-5 rounded border-slate-300 text-teal-700 focus:ring-teal-600"
+        class="mt-1 h-5 w-5 rounded border-slate-300 text-teal-700 focus:ring-teal-600 dark:border-slate-500"
         type="checkbox"
         [checked]="todo.done"
         (change)="onToggle(todo, $event)"
       />
 
       <div class="min-w-0 flex-1">
-        <h3 class="text-sm font-semibold" [class.text-slate-500]="todo.done" [class.line-through]="todo.done" [class.text-slate-950]="!todo.done">
+        <h3 class="text-sm font-semibold" [class.text-slate-500]="todo.done" [class.dark:text-slate-400]="todo.done" [class.line-through]="todo.done" [class.text-slate-950]="!todo.done" [class.dark:text-slate-50]="!todo.done">
           {{ todo.name }}
         </h3>
-        <p *ngIf="todo.notes" class="mt-1 whitespace-pre-wrap text-sm leading-6 text-slate-600">
+        <p *ngIf="todo.notes" class="mt-1 whitespace-pre-wrap text-sm leading-6 text-slate-600 dark:text-slate-400">
           {{ todo.notes }}
         </p>
-        <p *ngIf="todo.dueDate" class="mt-2 text-xs font-semibold uppercase tracking-wide text-teal-700">
+        <p *ngIf="todo.dueDate" class="mt-2 text-xs font-semibold uppercase tracking-wide text-teal-700 dark:text-teal-400">
           {{ todo.dueDate }}
         </p>
       </div>
 
-      <button class="rounded-lg px-2 py-1 text-sm font-semibold text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-4 focus:ring-red-100" type="button" (click)="deleteTodo.emit(todo.id)">
+      <button class="rounded-lg px-2 py-1 text-sm font-semibold text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-4 focus:ring-red-100 dark:text-red-400 dark:hover:bg-red-950 dark:focus:ring-red-900" type="button" (click)="deleteTodo.emit(todo.id)">
         Eliminar
       </button>
     </div>
