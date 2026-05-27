@@ -1,4 +1,4 @@
-<main class="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-5 py-6">
+<main class="app-shell mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-5 py-6">
   <header class="flex flex-col gap-4 border-b border-slate-200 pb-5 dark:border-slate-700 md:flex-row md:items-center md:justify-between">
     <div>
       <p class="text-sm font-medium uppercase tracking-wide text-teal-700 dark:text-teal-400">Electron + Angular + SQLite</p>
@@ -33,7 +33,7 @@
     {{ errorMessage }}
   </p>
 
-  <section class="grid flex-1 gap-5 lg:grid-cols-[1fr_360px]">
+  <section class="app-layout grid items-stretch gap-5">
     <app-calendar
       [todos]="todos"
       [selectedDate]="selectedDate"
@@ -43,7 +43,7 @@
       (todayRequested)="goToToday()"
     />
 
-    <aside class="flex min-h-0 flex-col rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+    <aside class="task-sidebar flex min-h-0 flex-col rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
       <div class="border-b border-slate-200 p-5 dark:border-slate-700">
         <p class="text-sm font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Dia selecionado</p>
         <h2 class="mt-1 text-xl font-semibold text-slate-950 dark:text-slate-50">{{ selectedDateTitle }}</h2>
@@ -55,7 +55,7 @@
           emptyText="Nao existem tarefas neste dia."
           (toggleTodo)="toggleTodo($event)"
           (editTodo)="openEditModal($event)"
-          (deleteTodo)="deleteTodo($event)"
+          (deleteTodo)="requestDeleteTodo($event)"
         />
       </div>
 
@@ -66,7 +66,7 @@
           emptyText="Nao existem tarefas sem data."
           (toggleTodo)="toggleTodo($event)"
           (editTodo)="openEditModal($event)"
-          (deleteTodo)="deleteTodo($event)"
+          (deleteTodo)="requestDeleteTodo($event)"
         />
       </div>
     </aside>
@@ -81,3 +81,42 @@
   (createTodo)="createTodo($event)"
   (updateTodo)="updateTodo($event)"
 />
+
+<div
+  *ngIf="todoPendingDelete"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm"
+  aria-hidden="false"
+  (click)="cancelDeleteTodo()"
+>
+  <section class="w-full max-w-md rounded-lg border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-800" (click)="$event.stopPropagation()">
+    <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-700">
+      <p class="text-sm font-semibold uppercase tracking-wide text-red-600 dark:text-red-400">Eliminar tarefa</p>
+      <h2 class="mt-2 text-xl font-semibold text-slate-950 dark:text-slate-50">Queres eliminar esta tarefa?</h2>
+    </div>
+
+    <div class="space-y-4 px-6 py-5">
+      <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/40">
+        <p class="text-sm font-semibold text-slate-950 dark:text-slate-50">{{ todoPendingDelete.name }}</p>
+        <p *ngIf="todoPendingDelete.notes" class="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600 dark:text-slate-400">
+          {{ todoPendingDelete.notes }}
+        </p>
+        <p *ngIf="todoPendingDelete.dueDate" class="mt-3 text-xs font-semibold uppercase tracking-wide text-teal-700 dark:text-teal-400">
+          {{ todoPendingDelete.dueDate }}<span *ngIf="todoPendingDelete.reminderTime"> - {{ todoPendingDelete.reminderTime }}</span>
+        </p>
+      </div>
+
+      <p class="text-sm leading-6 text-slate-600 dark:text-slate-400">
+        Esta acao nao pode ser anulada.
+      </p>
+    </div>
+
+    <div class="flex flex-col-reverse gap-3 border-t border-slate-200 px-6 py-5 dark:border-slate-700 sm:flex-row sm:justify-end">
+      <button class="rounded-lg border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-slate-200 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700 dark:focus:ring-slate-600" type="button" (click)="cancelDeleteTodo()">
+        Cancelar
+      </button>
+      <button class="rounded-lg bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-200 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900" type="button" (click)="confirmDeleteTodo()">
+        Eliminar tarefa
+      </button>
+    </div>
+  </section>
+</div>

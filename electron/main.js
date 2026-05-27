@@ -55,8 +55,8 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1180,
     height: 820,
-    minWidth: 940,
-    minHeight: 680,
+    minWidth: 720,
+    minHeight: 620,
     backgroundColor: "#f8fafc",
     title: "ToDo Calendar",
     webPreferences: {

@@ -14,7 +14,7 @@ export class TaskListComponent {
 
   @Output() toggleTodo = new EventEmitter<{ id: number; done: boolean }>();
   @Output() editTodo = new EventEmitter<Todo>();
-  @Output() deleteTodo = new EventEmitter<number>();
+  @Output() deleteTodo = new EventEmitter<Todo>();
 
   onToggle(todo: Todo, event: Event): void {
     const checkbox = event.target as HTMLInputElement;

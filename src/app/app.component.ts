@@ -19,6 +19,7 @@ export class AppComponent implements OnInit {
   visibleMonth = startOfMonth(new Date());
   isModalOpen = false;
   editingTodo: Todo | null = null;
+  todoPendingDelete: Todo | null = null;
   errorMessage = "";
   isDarkMode = false;
 
@@ -80,11 +81,20 @@ export class AppComponent implements OnInit {
     this.editingTodo = null;
   }
 
-  async deleteTodo(todoId: number): Promise<void> {
-    if (!window.confirm("Queres mesmo eliminar esta tarefa?")) return;
+  requestDeleteTodo(todo: Todo): void {
+    this.todoPendingDelete = todo;
+  }
+
+  cancelDeleteTodo(): void {
+    this.todoPendingDelete = null;
+  }
+
+  async confirmDeleteTodo(): Promise<void> {
+    if (!this.todoPendingDelete) return;
 
     try {
-      await this.todoService.delete(todoId);
+      await this.todoService.delete(this.todoPendingDelete.id);
+      this.todoPendingDelete = null;
       await this.loadTodos();
     } catch (error) {
       this.errorMessage = error instanceof Error ? error.message : "Nao foi possivel eliminar a tarefa.";
