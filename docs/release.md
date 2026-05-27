@@ -30,13 +30,13 @@ Os ficheiros ficam na pasta `release/`:
 3. Cria uma tag com a mesma versao do `package.json`:
 
    ```bash
-   git tag v0.1.0-alpha.1
+   git tag v0.1.0-alpha.2
    ```
 
 4. Faz push da tag:
 
    ```bash
-   git push origin v0.1.0-alpha.1
+   git push origin v0.1.0-alpha.2
    ```
 
 5. No GitHub, abre o separador **Actions** e espera o workflow **Release** terminar.

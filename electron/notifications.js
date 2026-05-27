@@ -1,9 +1,12 @@
 const fs = require("fs");
 const path = require("path");
-const { DATA_DIR } = require("./constants");
+const { getDataDir } = require("./constants");
 
 const DEFAULT_CHECK_INTERVAL_MS = 60 * 1000;
-const DEFAULT_STATE_FILE = path.join(DATA_DIR, "notification-state.json");
+
+function getNotificationStatePath() {
+  return path.join(getDataDir(), "notification-state.json");
+}
 
 function toDateKey(date = new Date()) {
   const year = date.getFullYear();
@@ -36,7 +39,7 @@ function getDuePendingTodos(todos, now = new Date()) {
     });
 }
 
-function readNotificationState(filePath = DEFAULT_STATE_FILE) {
+function readNotificationState(filePath = getNotificationStatePath()) {
   try {
     const state = JSON.parse(fs.readFileSync(filePath, "utf8"));
     return {
@@ -47,7 +50,7 @@ function readNotificationState(filePath = DEFAULT_STATE_FILE) {
   }
 }
 
-function writeNotificationState(state, filePath = DEFAULT_STATE_FILE) {
+function writeNotificationState(state, filePath = getNotificationStatePath()) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(state, null, 2));
 }
@@ -88,7 +91,7 @@ async function notifyDueTodos({
   database,
   Notification,
   mainWindow,
-  stateFilePath = DEFAULT_STATE_FILE,
+  stateFilePath = getNotificationStatePath(),
   now = new Date()
 }) {
   if (!Notification?.isSupported?.()) {
@@ -124,7 +127,7 @@ function startTaskNotifications({
   database,
   mainWindow,
   checkIntervalMs = DEFAULT_CHECK_INTERVAL_MS,
-  stateFilePath = DEFAULT_STATE_FILE
+  stateFilePath = getNotificationStatePath()
 }) {
   const { Notification } = require("electron");
 
@@ -144,6 +147,7 @@ module.exports = {
   filterUnnotifiedTodos,
   getDuePendingTodos,
   getNotificationKey,
+  getNotificationStatePath,
   getTodoReminderKey,
   notifyDueTodos,
   readNotificationState,

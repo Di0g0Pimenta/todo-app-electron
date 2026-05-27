@@ -1,6 +1,6 @@
 {
   "name": "todo-calendar-electron",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "description": "ToDo List com Electron, SQLite e calendario mensal.",
   "main": "electron/main.js",
   "scripts": {
