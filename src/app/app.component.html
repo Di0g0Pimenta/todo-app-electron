@@ -21,7 +21,7 @@
       <button
         class="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-teal-200 dark:bg-teal-600 dark:hover:bg-teal-700"
         type="button"
-        (click)="isModalOpen = true"
+        (click)="openCreateModal()"
       >
         <span class="text-lg leading-none">+</span>
         Criar tarefa
@@ -54,6 +54,7 @@
           [todos]="selectedTodos"
           emptyText="Nao existem tarefas neste dia."
           (toggleTodo)="toggleTodo($event)"
+          (editTodo)="openEditModal($event)"
           (deleteTodo)="deleteTodo($event)"
         />
       </div>
@@ -64,6 +65,7 @@
           [todos]="undatedTodos"
           emptyText="Nao existem tarefas sem data."
           (toggleTodo)="toggleTodo($event)"
+          (editTodo)="openEditModal($event)"
           (deleteTodo)="deleteTodo($event)"
         />
       </div>
@@ -74,6 +76,8 @@
 <app-task-modal
   [isOpen]="isModalOpen"
   [selectedDate]="selectedDate"
-  (closeModal)="isModalOpen = false"
+  [todoToEdit]="editingTodo"
+  (closeModal)="closeTaskModal()"
   (createTodo)="createTodo($event)"
+  (updateTodo)="updateTodo($event)"
 />

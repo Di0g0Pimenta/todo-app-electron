@@ -6,7 +6,7 @@
 >
   <div class="w-full max-w-lg rounded-lg bg-white shadow-xl dark:bg-slate-800" (click)="$event.stopPropagation()">
     <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-700">
-      <h2 class="text-xl font-semibold text-slate-950 dark:text-slate-50">Criar tarefa</h2>
+      <h2 class="text-xl font-semibold text-slate-950 dark:text-slate-50">{{ isEditing ? 'Editar tarefa' : 'Criar tarefa' }}</h2>
       <button class="grid h-9 w-9 place-items-center rounded-lg text-2xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 focus:outline-none focus:ring-4 focus:ring-slate-200 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-50 dark:focus:ring-slate-600" type="button" aria-label="Fechar" (click)="closeModal.emit()">
         &times;
       </button>
@@ -37,7 +37,7 @@
           Cancelar
         </button>
         <button class="rounded-lg bg-teal-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-teal-200 dark:bg-teal-600 dark:hover:bg-teal-700 dark:focus:ring-teal-800" type="submit">
-          Guardar tarefa
+          {{ isEditing ? 'Guardar alteracoes' : 'Guardar tarefa' }}
         </button>
       </div>
     </form>

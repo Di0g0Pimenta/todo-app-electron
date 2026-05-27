@@ -12,6 +12,10 @@ export class TodoService {
     return window.api.addTodo(todo);
   }
 
+  update(id: number, todo: TodoInput): Promise<Todo> {
+    return window.api.updateTodo(id, todo);
+  }
+
   toggle(id: number, done: boolean): Promise<Todo> {
     return window.api.toggleTodo(id, done);
   }

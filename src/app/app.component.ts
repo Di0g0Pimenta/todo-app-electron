@@ -18,6 +18,7 @@ export class AppComponent implements OnInit {
   selectedDate = toDateKey(new Date());
   visibleMonth = startOfMonth(new Date());
   isModalOpen = false;
+  editingTodo: Todo | null = null;
   errorMessage = "";
   isDarkMode = false;
 
@@ -45,11 +46,38 @@ export class AppComponent implements OnInit {
   async createTodo(todo: TodoInput): Promise<void> {
     try {
       await this.todoService.add(todo);
-      this.isModalOpen = false;
+      this.closeTaskModal();
       await this.loadTodos();
     } catch (error) {
       this.errorMessage = error instanceof Error ? error.message : "Nao foi possivel criar a tarefa.";
     }
+  }
+
+  async updateTodo(todo: TodoInput): Promise<void> {
+    if (!this.editingTodo) return;
+
+    try {
+      await this.todoService.update(this.editingTodo.id, todo);
+      this.closeTaskModal();
+      await this.loadTodos();
+    } catch (error) {
+      this.errorMessage = error instanceof Error ? error.message : "Nao foi possivel atualizar a tarefa.";
+    }
+  }
+
+  openCreateModal(): void {
+    this.editingTodo = null;
+    this.isModalOpen = true;
+  }
+
+  openEditModal(todo: Todo): void {
+    this.editingTodo = todo;
+    this.isModalOpen = true;
+  }
+
+  closeTaskModal(): void {
+    this.isModalOpen = false;
+    this.editingTodo = null;
   }
 
   async deleteTodo(todoId: number): Promise<void> {

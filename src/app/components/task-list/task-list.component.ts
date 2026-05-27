@@ -13,6 +13,7 @@ export class TaskListComponent {
   @Input() emptyText = "Nao existem tarefas.";
 
   @Output() toggleTodo = new EventEmitter<{ id: number; done: boolean }>();
+  @Output() editTodo = new EventEmitter<Todo>();
   @Output() deleteTodo = new EventEmitter<number>();
 
   onToggle(todo: Todo, event: Event): void {
