@@ -52,12 +52,15 @@ function createTray() {
 }
 
 function createWindow() {
+  const iconPath = path.join(__dirname, "tray-icon.png");
+
   mainWindow = new BrowserWindow({
     width: 1180,
     height: 820,
     minWidth: 720,
     minHeight: 620,
     backgroundColor: "#f8fafc",
+    icon: iconPath,
     title: "ToDo Calendar",
     webPreferences: {
       // O preload e a unica ponte entre Angular e o processo main.
