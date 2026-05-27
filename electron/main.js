@@ -60,6 +60,9 @@ function createWindow() {
     }
   });
 
+  // Remove a barra de menus padrão (File, Edit, View, etc.)
+  mainWindow.setMenu(null);
+
   // Ao clicar no "X", esconde a janela em vez de fechar
   mainWindow.on("close", (event) => {
     event.preventDefault();
