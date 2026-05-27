@@ -22,6 +22,7 @@ export class TaskModalComponent implements OnChanges {
   name = "";
   notes = "";
   dueDate: string | null = null;
+  reminderTime: string | null = null;
   errorMessage = "";
 
   get isEditing(): boolean {
@@ -43,7 +44,8 @@ export class TaskModalComponent implements OnChanges {
       const todo = normalizeTodoInput({
         name: this.name,
         notes: this.notes,
-        dueDate: this.dueDate
+        dueDate: this.dueDate,
+        reminderTime: this.reminderTime
       });
 
       this.errorMessage = "";
@@ -62,10 +64,12 @@ export class TaskModalComponent implements OnChanges {
       this.name = this.todoToEdit.name;
       this.notes = this.todoToEdit.notes;
       this.dueDate = this.todoToEdit.dueDate;
+      this.reminderTime = this.todoToEdit.reminderTime;
     } else {
       this.name = "";
       this.notes = "";
       this.dueDate = this.selectedDate;
+      this.reminderTime = null;
     }
 
     this.errorMessage = "";

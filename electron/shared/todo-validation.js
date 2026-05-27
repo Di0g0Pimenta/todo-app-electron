@@ -9,8 +9,25 @@ function normalizeDate(value) {
   return cleanValue;
 }
 
+function normalizeTime(value) {
+  if (!value) return null;
+
+  const cleanValue = String(value).trim();
+  if (!/^\d{2}:\d{2}$/.test(cleanValue)) {
+    throw new Error("A hora deve estar no formato HH:mm.");
+  }
+
+  const [hours, minutes] = cleanValue.split(":").map(Number);
+  if (hours > 23 || minutes > 59) {
+    throw new Error("A hora deve estar entre 00:00 e 23:59.");
+  }
+
+  return cleanValue;
+}
+
 function normalizeTodoInput(data) {
   const name = String(data?.name || "").trim();
+  const dueDate = normalizeDate(data?.dueDate);
 
   if (!name) {
     throw new Error("O nome da tarefa e obrigatorio.");
@@ -19,7 +36,8 @@ function normalizeTodoInput(data) {
   return {
     name,
     notes: String(data?.notes || "").trim(),
-    dueDate: normalizeDate(data?.dueDate)
+    dueDate,
+    reminderTime: dueDate ? normalizeTime(data?.reminderTime) : null
   };
 }
 
@@ -27,7 +45,8 @@ function normalizeTodoUpdate(currentTodo, data) {
   const input = normalizeTodoInput({
     name: data?.name ?? currentTodo.name,
     notes: data?.notes ?? currentTodo.notes,
-    dueDate: data?.dueDate === undefined ? currentTodo.dueDate : data.dueDate
+    dueDate: data?.dueDate === undefined ? currentTodo.dueDate : data.dueDate,
+    reminderTime: data?.reminderTime === undefined ? currentTodo.reminderTime : data.reminderTime
   });
 
   return {
@@ -38,6 +57,7 @@ function normalizeTodoUpdate(currentTodo, data) {
 
 module.exports = {
   normalizeDate,
+  normalizeTime,
   normalizeTodoInput,
   normalizeTodoUpdate
 };

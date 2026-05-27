@@ -1,10 +1,17 @@
 const path = require("path");
 const { app, BrowserWindow, Tray, Menu, nativeImage } = require("electron");
-const { initDatabase, closeDatabase } = require("./database");
+const database = require("./database");
+const { initDatabase, closeDatabase } = database;
 const { registerTodoHandlers } = require("./ipc");
+const { startTaskNotifications } = require("./notifications");
 
 let mainWindow = null;
 let tray = null;
+let stopTaskNotifications = null;
+
+if (process.platform === "win32") {
+  app.setAppUserModelId("com.diogopimenta.todo-calendar");
+}
 
 // Impede que o app feche quando todas as janelas são fechadas (necessário para o tray)
 app.on("window-all-closed", () => {
@@ -79,6 +86,7 @@ app.whenReady().then(() => {
   registerTodoHandlers();
   createWindow();
   createTray();
+  stopTaskNotifications = startTaskNotifications({ database, mainWindow });
 
   app.on("activate", () => {
     // macOS: reabrir janela ao clicar no dock
@@ -89,5 +97,8 @@ app.whenReady().then(() => {
 app.on("before-quit", () => {
   // Permite fechar a janela de verdade ao sair pelo menu do tray
   mainWindow.removeAllListeners("close");
+  if (stopTaskNotifications) {
+    stopTaskNotifications();
+  }
   closeDatabase();
 });

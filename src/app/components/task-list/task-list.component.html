@@ -20,7 +20,7 @@
           {{ todo.notes }}
         </p>
         <p *ngIf="todo.dueDate" class="mt-2 text-xs font-semibold uppercase tracking-wide text-teal-700 dark:text-teal-400">
-          {{ todo.dueDate }}
+          {{ todo.dueDate }}<span *ngIf="todo.reminderTime"> - {{ todo.reminderTime }}</span>
         </p>
       </div>
 
