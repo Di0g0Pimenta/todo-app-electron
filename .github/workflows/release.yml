@@ -29,10 +29,17 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Build Angular app
-        run: npm run build
+      - name: Build Windows installer
+        run: npm run dist
 
       - name: Publish GitHub release
-        run: npx electron-builder --win --publish always
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ToDo Calendar ${{ github.ref_name }}
+          body_path: docs/release-notes/${{ github.ref_name }}.md
+          prerelease: true
+          files: |
+            release/*.exe
+            release/*.zip
+            release/*.blockmap
+            release/latest.yml
