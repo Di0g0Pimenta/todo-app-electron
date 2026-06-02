@@ -60,7 +60,6 @@ function createWindow() {
     minWidth: 720,
     minHeight: 620,
     backgroundColor: "#f8fafc",
-    fullscreen: true,
     icon: iconPath,
     title: "ToDo Calendar",
     webPreferences: {
@@ -73,6 +72,7 @@ function createWindow() {
 
   // Remove a barra de menus padrão (File, Edit, View, etc.)
   mainWindow.setMenu(null);
+  mainWindow.maximize();
 
   // Ao clicar no "X", esconde a janela em vez de fechar
   mainWindow.on("close", (event) => {

@@ -52,10 +52,10 @@ No Windows local, a build com icone embutido no executavel pode precisar do **De
 Para a proxima versao, altera a versao antes da tag:
 
 ```bash
-npm version 0.1.0-alpha.2 --no-git-tag-version
+npm version 0.1.0-alpha.4 --no-git-tag-version
 git add package.json package-lock.json
-git commit -m "Bump version to 0.1.0-alpha.2"
-git tag v0.1.0-alpha.2
+git commit -m "Bump version to 0.1.0-alpha.4"
+git tag v0.1.0-alpha.4
 git push origin main
-git push origin v0.1.0-alpha.2
+git push origin v0.1.0-alpha.4
 ```

@@ -2,7 +2,7 @@
 
 Aplicacao desktop de tarefas com **Electron**, **Angular** e **SQLite**.
 
-## Como correr
+## Como correr em desenvolvimento
 
 ```bash
 npm install
@@ -20,16 +20,23 @@ npm run dev       # Angular em watch mode
 npm run seed      # adiciona tarefas demo usando o runtime do Electron
 npm test          # corre testes basicos
 npm run rebuild   # recompila better-sqlite3 para Electron
+npm run dist      # gera instalador Windows em release/
 ```
 
 ## Estrutura
 
 ```txt
-electron/           main process, preload, IPC, SQLite e validacao backend
-src/                Angular renderer
-data/todos.db       base de dados local
-docs/ipc-contract.md
+electron/           Processo principal Electron, preload, IPC, SQLite e notificacoes
+src/                Interface Angular
+scripts/            Scripts de apoio, como seed de dados demo
+tests/              Testes Node.js
+docs/               Documentacao tecnica e apoio a apresentacao/release
+build/              Recursos de build, como icon do instalador
+data/               Dados locais usados em desenvolvimento
+release/            Instaladores gerados localmente (ignorado pelo Git)
 ```
+
+Na app instalada, os dados nao ficam em `data/`; ficam na pasta `userData` do Electron, dentro do perfil do utilizador no Windows.
 
 ## Fluxo de dados
 
@@ -56,3 +63,5 @@ Angular Component
 - `docs/presentation-guide.md`: roteiro de 10 minutos.
 - `docs/question-bank.md`: perguntas provaveis e respostas.
 - `docs/demo-checklist.md`: checklist para a demo.
+- `docs/project-structure.md`: organizacao tecnica atual do projeto.
+- `docs/release.md`: como gerar e publicar releases alfa.
