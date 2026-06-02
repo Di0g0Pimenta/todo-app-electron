@@ -10,7 +10,9 @@ function getDataDir() {
 
   if (process.versions.electron) {
     const { app } = require("electron");
-    return app.getPath("userData");
+    if (app && app.isPackaged) {
+      return app.getPath("userData");
+    }
   }
 
   return DATA_DIR;

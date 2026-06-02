@@ -60,6 +60,7 @@ function createWindow() {
     minWidth: 720,
     minHeight: 620,
     backgroundColor: "#f8fafc",
+    fullscreen: true,
     icon: iconPath,
     title: "ToDo Calendar",
     webPreferences: {

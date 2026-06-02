@@ -1,5 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { Component, OnInit } from "@angular/core";
+import { FormsModule } from "@angular/forms";
 import { CalendarComponent } from "./components/calendar/calendar.component";
 import { TaskListComponent } from "./components/task-list/task-list.component";
 import { TaskModalComponent } from "./components/task-modal/task-modal.component";
@@ -10,7 +11,7 @@ import { capitalize, fromDateKey, fullDateFormatter, startOfMonth, toDateKey } f
 @Component({
   selector: "app-root",
   standalone: true,
-  imports: [CommonModule, CalendarComponent, TaskListComponent, TaskModalComponent],
+  imports: [CommonModule, FormsModule, CalendarComponent, TaskListComponent, TaskModalComponent],
   templateUrl: "./app.component.html"
 })
 export class AppComponent implements OnInit {
@@ -22,6 +23,7 @@ export class AppComponent implements OnInit {
   todoPendingDelete: Todo | null = null;
   errorMessage = "";
   isDarkMode = false;
+  searchQuery = "";
 
   constructor(private readonly todoService: TodoService) {}
 
@@ -36,12 +38,22 @@ export class AppComponent implements OnInit {
     return capitalize(fullDateFormatter.format(fromDateKey(this.selectedDate)));
   }
 
+  get pendingTodosCount(): number {
+    return this.todos.filter(t => !t.done).length;
+  }
+
   get selectedTodos(): Todo[] {
-    return this.todos.filter((todo) => todo.dueDate === this.selectedDate);
+    return this.todos.filter((todo) => todo.dueDate === this.selectedDate && this.matchesSearch(todo));
   }
 
   get undatedTodos(): Todo[] {
-    return this.todos.filter((todo) => !todo.dueDate);
+    return this.todos.filter((todo) => !todo.dueDate && this.matchesSearch(todo));
+  }
+
+  private matchesSearch(todo: Todo): boolean {
+    if (!this.searchQuery) return true;
+    const query = this.searchQuery.toLowerCase();
+    return todo.name.toLowerCase().includes(query) || (todo.notes?.toLowerCase().includes(query) ?? false);
   }
 
   async createTodo(todo: TodoInput): Promise<void> {

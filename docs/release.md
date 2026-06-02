@@ -13,6 +13,8 @@ Os ficheiros ficam na pasta `release/`:
 - `ToDo Calendar Setup <versao>.exe`
 - `ToDo Calendar-<versao>-win.zip`
 
+No Windows local, a build com icone embutido no executavel pode precisar do **Developer Mode** ativo ou de permissoes para criar symbolic links. Se falhar ao extrair `winCodeSign`, publica pela GitHub Action ou ativa o Developer Mode em **Settings > System > For developers**.
+
 ## Publicar uma versao alfa no GitHub
 
 1. Garante que a working tree esta limpa:
@@ -30,13 +32,13 @@ Os ficheiros ficam na pasta `release/`:
 3. Cria uma tag com a mesma versao do `package.json`:
 
    ```bash
-   git tag v0.1.0-alpha.2
+   git tag v0.1.0-alpha.3
    ```
 
 4. Faz push da tag:
 
    ```bash
-   git push origin v0.1.0-alpha.2
+   git push origin v0.1.0-alpha.3
    ```
 
 5. No GitHub, abre o separador **Actions** e espera o workflow **Release** terminar.

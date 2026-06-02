@@ -1,6 +1,6 @@
 {
   "name": "todo-calendar-electron",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-alpha.3",
   "description": "ToDo List com Electron, SQLite e calendario mensal.",
   "main": "electron/main.js",
   "scripts": {
@@ -31,7 +31,6 @@
     ],
     "win": {
       "icon": "build/icon.ico",
-      "signAndEditExecutable": false,
       "target": [
         {
           "target": "nsis",
@@ -48,6 +47,8 @@
       ]
     },
     "nsis": {
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,

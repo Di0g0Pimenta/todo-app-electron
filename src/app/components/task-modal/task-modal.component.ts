@@ -24,6 +24,7 @@ export class TaskModalComponent implements OnChanges {
   dueDate: string | null = null;
   reminderTime: string | null = null;
   errorMessage = "";
+  isSubmitted = false;
 
   get isEditing(): boolean {
     return Boolean(this.todoToEdit);
@@ -31,6 +32,7 @@ export class TaskModalComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes["isOpen"]?.currentValue) {
+      this.isSubmitted = false;
       this.fillForm();
     }
 
@@ -40,6 +42,12 @@ export class TaskModalComponent implements OnChanges {
   }
 
   submit(): void {
+    this.isSubmitted = true;
+    
+    if (!this.name.trim()) {
+      return;
+    }
+    
     try {
       const todo = normalizeTodoInput({
         name: this.name,
