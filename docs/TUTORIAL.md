@@ -1441,9 +1441,472 @@ app.on("before-quit", () => {
 });
 ```
 
+### Ficheiro: `electron/notifications.js`
+
+Gere as notificações do sistema para tarefas com lembrete ou em atraso.
+
+```javascript
+const fs = require("fs");
+const path = require("path");
+const { getDataDir } = require("./constants");
+
+const DEFAULT_CHECK_INTERVAL_MS = 60 * 1000;
+
+function getNotificationStatePath() {
+  return path.join(getDataDir(), "notification-state.json");
+}
+
+function toDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function toDateTimeKey(date = new Date()) {
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${toDateKey(date)}T${hours}:${minutes}`;
+}
+
+function getTodoReminderKey(todo) {
+  return `${todo.dueDate}T${todo.reminderTime || "00:00"}`;
+}
+
+function getNotificationKey(todo) {
+  return `${todo.id}:${getTodoReminderKey(todo)}`;
+}
+
+function getDuePendingTodos(todos, now = new Date()) {
+  const nowKey = toDateTimeKey(now);
+  return todos
+    .filter((todo) => !todo.done && todo.dueDate && getTodoReminderKey(todo) <= nowKey)
+    .sort((left, right) => {
+      const dateOrder = getTodoReminderKey(left).localeCompare(getTodoReminderKey(right));
+      return dateOrder === 0 ? left.id - right.id : dateOrder;
+    });
+}
+
+function readNotificationState(filePath = getNotificationStatePath()) {
+  try {
+    const state = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    return {
+      notifiedKeys: Array.isArray(state.notifiedKeys) ? state.notifiedKeys : []
+    };
+  } catch (_error) {
+    return { notifiedKeys: [] };
+  }
+}
+
+function writeNotificationState(state, filePath = getNotificationStatePath()) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, JSON.stringify(state, null, 2));
+}
+
+function filterUnnotifiedTodos(todos, state, now = new Date()) {
+  const notifiedKeys = new Set(state.notifiedKeys || []);
+  return getDuePendingTodos(todos, now).filter((todo) => !notifiedKeys.has(getNotificationKey(todo)));
+}
+
+function buildNotificationContent(todos, todayKey = toDateKey()) {
+  if (todos.length === 1) {
+    const [todo] = todos;
+    const title = todo.dueDate < todayKey ? "Tarefa em atraso" : "Tarefa para hoje";
+    return {
+      title,
+      body: [todo.name, todo.reminderTime ? `Hora: ${todo.reminderTime}` : "", todo.notes || ""]
+        .filter(Boolean)
+        .join("
+")
+    };
+  }
+
+  const overdueCount = todos.filter((todo) => todo.dueDate < todayKey).length;
+  const preview = todos
+    .slice(0, 4)
+    .map((todo) => `- ${todo.reminderTime ? `${todo.reminderTime} ` : ""}${todo.name}`)
+    .join("
+");
+  const remaining = todos.length > 4 ? `
++ ${todos.length - 4} tarefa(s)` : "";
+
+  return {
+    title: overdueCount
+      ? `${todos.length} tarefas pendentes (${overdueCount} em atraso)`
+      : `${todos.length} tarefas para hoje`,
+    body: `${preview}${remaining}`
+  };
+}
+
+async function notifyDueTodos({
+  database,
+  Notification,
+  mainWindow,
+  stateFilePath = getNotificationStatePath(),
+  now = new Date()
+}) {
+  if (!Notification?.isSupported?.()) {
+    return 0;
+  }
+
+  const state = readNotificationState(stateFilePath);
+  const todos = filterUnnotifiedTodos(database.getAllTodos(), state, now);
+
+  if (!todos.length) {
+    return 0;
+  }
+
+  const todayKey = toDateKey(now);
+  const notification = new Notification(buildNotificationContent(todos, todayKey));
+  notification.on("click", () => {
+    if (!mainWindow) return;
+    mainWindow.show();
+    mainWindow.focus();
+  });
+  notification.show();
+
+  const notifiedKeys = new Set(state.notifiedKeys || []);
+  for (const todo of todos) {
+    notifiedKeys.add(getNotificationKey(todo));
+  }
+
+  writeNotificationState({ notifiedKeys: [...notifiedKeys] }, stateFilePath);
+  return todos.length;
+}
+
+function startTaskNotifications({
+  database,
+  mainWindow,
+  checkIntervalMs = DEFAULT_CHECK_INTERVAL_MS,
+  stateFilePath = getNotificationStatePath()
+}) {
+  const { Notification } = require("electron");
+
+  const check = () => {
+    notifyDueTodos({ database, Notification, mainWindow, stateFilePath }).catch((error) => {
+      console.error("[notifications]", error);
+    });
+  };
+
+  setTimeout(check, 5000);
+  const timer = setInterval(check, checkIntervalMs);
+  return () => clearInterval(timer);
+}
+
+module.exports = {
+  buildNotificationContent,
+  filterUnnotifiedTodos,
+  getDuePendingTodos,
+  getNotificationKey,
+  getNotificationStatePath,
+  getTodoReminderKey,
+  notifyDueTodos,
+  readNotificationState,
+  startTaskNotifications,
+  toDateKey,
+  toDateTimeKey,
+  writeNotificationState
+};
+```
+
 ---
 
-## Passo 13: Criar um Ícone para o System Tray
+## Passo 13: Scripts Utilitários
+
+### Ficheiro: `scripts/seed-demo.js`
+
+Script para povoar a base de dados com tarefas de demonstração.
+
+```javascript
+const { addTodo, toggleTodo, closeDatabase, getAllTodos, deleteTodo, initDatabase, getDbPath } = require("../electron/database");
+
+const today = new Date();
+
+function dateKey(offset) {
+  const date = new Date(today);
+  date.setDate(today.getDate() + offset);
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function timeKey(minutesOffset = 0) {
+  const date = new Date();
+  date.setMinutes(date.getMinutes() + minutesOffset);
+  const hours = String(date.getHours()).padStart(2, "0");
+  const mins = String(date.getMinutes()).padStart(2, "0");
+  return `${hours}:${mins}`;
+}
+
+initDatabase();
+
+// Limpar tarefas existentes para um reset completo
+const existing = getAllTodos();
+for (const todo of existing) {
+    deleteTodo(todo.id);
+}
+
+const demoTodos = [
+  // Tarefas para HOJE
+  {
+    name: "Reuniao de Projeto (Hoje)",
+    notes: "Apresentacao do prototipo Electron + Angular para a equipa. Discutir arquitetura e proximos passos.
+- Mostrar calendário
+- Explicar SQLite
+- Demonstrar notificacoes",
+    dueDate: dateKey(0),
+    reminderTime: timeKey(2), // Lembrar daqui a 2 minutos para testar notificacoes do Electron
+    done: false
+  },
+  {
+    name: "Comprar cafe",
+    notes: "Ir a maquina buscar cafe antes da reuniao.",
+    dueDate: dateKey(0),
+    reminderTime: null,
+    done: true // Ja concluida
+  },
+  {
+    name: "Ligar ao cliente",
+    notes: "Confirmar requisitos do novo modulo de notificacoes.",
+    dueDate: dateKey(0),
+    reminderTime: timeKey(60), // Daqui a uma hora
+    done: false
+  },
+  {
+    name: "Responder a emails urgentes",
+    notes: "",
+    dueDate: dateKey(0),
+    reminderTime: null,
+    done: false
+  },
+
+  // Tarefas PASSADAS (Atrasadas)
+  {
+    name: "Pagar fatura da internet",
+    notes: "Aviso de corte em breve! Pagar via homebanking.",
+    dueDate: dateKey(-2),
+    reminderTime: "10:00",
+    done: false
+  },
+  {
+    name: "Rever pull requests",
+    notes: "Rever o codigo do modulo de IPC.",
+    dueDate: dateKey(-1),
+    reminderTime: null,
+    done: true
+  },
+
+  // Tarefas FUTURAS
+  {
+    name: "Entregar relatorio mensal",
+    notes: "O relatorio deve incluir estatisticas de uso, bugs resolvidos e novas funcionalidades planeadas para o proximo trimestre. Nao esquecer de incluir graficos detalhados.",
+    dueDate: dateKey(1),
+    reminderTime: "17:00",
+    done: false
+  },
+  {
+    name: "Jantar com amigos",
+    notes: "Restaurante no centro da cidade. Mesa reservada para as 20h.",
+    dueDate: dateKey(3),
+    reminderTime: "19:30",
+    done: false
+  },
+  {
+    name: "Consulta de rotina",
+    notes: "Levar exames anteriores e cartao do seguro.",
+    dueDate: dateKey(10),
+    reminderTime: "08:00",
+    done: false
+  },
+
+  // Tarefas SEM DATA
+  {
+    name: "Ler livro sobre TypeScript",
+    notes: "Comecar a ler o capitulo sobre decorators e metadados.",
+    dueDate: null,
+    reminderTime: null,
+    done: false
+  },
+  {
+    name: "Comprar teclado novo",
+    notes: "Procurar teclados mecanicos silenciosos para usar no escritorio.",
+    dueDate: null,
+    reminderTime: null,
+    done: false
+  },
+  {
+    name: "Aprender Rust",
+    notes: "Ver tutorial basico no fim de semana.",
+    dueDate: null,
+    reminderTime: null,
+    done: true
+  }
+];
+
+let createdCount = 0;
+
+for (const todo of demoTodos) {
+  const added = addTodo({
+    name: todo.name,
+    notes: todo.notes,
+    dueDate: todo.dueDate,
+    reminderTime: todo.reminderTime
+  });
+  
+  if (todo.done) {
+    toggleTodo(added.id, true);
+  }
+  createdCount += 1;
+}
+
+console.log(`Base de dados: ${getDbPath()}`);
+console.log(`${createdCount} tarefa(s) demo adicionadas com sucesso! (Base de dados limpa e recriada)`);
+closeDatabase();
+```
+
+---
+
+## Passo 14: Testes Unitários
+
+### Ficheiro: `tests/notifications.test.js`
+
+```javascript
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const {
+  buildNotificationContent,
+  filterUnnotifiedTodos,
+  getDuePendingTodos,
+  getNotificationKey,
+  toDateKey,
+  toDateTimeKey
+} = require("../electron/notifications");
+
+test("toDateKey formats local dates as YYYY-MM-DD", () => {
+  assert.equal(toDateKey(new Date(2026, 4, 7)), "2026-05-07");
+});
+
+test("toDateTimeKey formats local dates and times", () => {
+  assert.equal(toDateTimeKey(new Date(2026, 4, 7, 9, 5)), "2026-05-07T09:05");
+});
+
+test("getDuePendingTodos returns only unfinished todos with reached reminders", () => {
+  const todos = [
+    { id: 1, name: "Hoje sem hora", done: false, dueDate: "2026-05-27", reminderTime: null },
+    { id: 2, name: "Mais tarde", done: false, dueDate: "2026-05-27", reminderTime: "18:00" },
+    { id: 3, name: "Feita", done: true, dueDate: "2026-05-20", reminderTime: "09:00" },
+    { id: 4, name: "Sem data", done: false, dueDate: null, reminderTime: "09:00" },
+    { id: 5, name: "Atrasada", done: false, dueDate: "2026-05-20", reminderTime: "10:15" },
+    { id: 6, name: "Agora", done: false, dueDate: "2026-05-27", reminderTime: "14:30" }
+  ];
+
+  assert.deepEqual(
+    getDuePendingTodos(todos, new Date(2026, 4, 27, 14, 30)).map((todo) => todo.id),
+    [5, 1, 6]
+  );
+});
+
+test("filterUnnotifiedTodos skips todos already notified for the same reminder", () => {
+  const todos = [
+    { id: 1, name: "Hoje", done: false, dueDate: "2026-05-27", reminderTime: "09:00" },
+    { id: 2, name: "Atrasada", done: false, dueDate: "2026-05-20", reminderTime: null }
+  ];
+  const state = {
+    notifiedKeys: [getNotificationKey(todos[0])]
+  };
+
+  assert.deepEqual(
+    filterUnnotifiedTodos(todos, state, new Date(2026, 4, 27, 10, 0)).map((todo) => todo.id),
+    [2]
+  );
+});
+
+test("buildNotificationContent creates a useful summary for multiple todos", () => {
+  const content = buildNotificationContent(
+    [
+      { id: 1, name: "Pagar conta", done: false, dueDate: "2026-05-26", reminderTime: "09:00" },
+      { id: 2, name: "Enviar relatorio", done: false, dueDate: "2026-05-27", reminderTime: "14:30" }
+    ],
+    "2026-05-27"
+  );
+
+  assert.match(content.title, /2 tarefas pendentes/);
+  assert.match(content.body, /09:00 Pagar conta/);
+  assert.match(content.body, /Enviar relatorio/);
+});
+```
+
+### Ficheiro: `tests/todo-validation.test.js`
+
+```javascript
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const { normalizeDate, normalizeTime, normalizeTodoInput } = require("../electron/shared/todo-validation");
+
+test("normalizeTodoInput trims valid todo data", () => {
+  assert.deepEqual(
+    normalizeTodoInput({
+      name: "  Estudar Electron  ",
+      notes: "  IPC + SQLite  ",
+      dueDate: "2026-05-20",
+      reminderTime: " 09:30 "
+    }),
+    {
+      name: "Estudar Electron",
+      notes: "IPC + SQLite",
+      dueDate: "2026-05-20",
+      reminderTime: "09:30"
+    }
+  );
+});
+
+test("normalizeTodoInput rejects empty names", () => {
+  assert.throws(() => normalizeTodoInput({ name: "   " }), /nome da tarefa/i);
+});
+
+test("normalizeDate accepts empty dates as null", () => {
+  assert.equal(normalizeDate(""), null);
+  assert.equal(normalizeDate(null), null);
+});
+
+test("normalizeDate rejects invalid formats", () => {
+  assert.throws(() => normalizeDate("20-05-2026"), /YYYY-MM-DD/);
+});
+
+test("normalizeTime accepts valid times", () => {
+  assert.equal(normalizeTime("08:05"), "08:05");
+  assert.equal(normalizeTime(""), null);
+});
+
+test("normalizeTime rejects invalid times", () => {
+  assert.throws(() => normalizeTime("24:00"), /00:00 e 23:59/);
+  assert.throws(() => normalizeTime("8:00"), /HH:mm/);
+});
+
+test("normalizeTodoInput ignores reminder time without a due date", () => {
+  assert.deepEqual(
+    normalizeTodoInput({
+      name: "Tarefa livre",
+      notes: "",
+      dueDate: null,
+      reminderTime: "09:30"
+    }),
+    {
+      name: "Tarefa livre",
+      notes: "",
+      dueDate: null,
+      reminderTime: null
+    }
+  );
+});
+```
+
+
+---
+
+## Passo 15: Criar um Ícone para o System Tray
 
 Para o System Tray funcionar, precisas de um ficheiro `tray-icon.png` de 16x16 píxeis.
 
@@ -1453,7 +1916,7 @@ Se não tiveres uma imagem, podes criar uma simples com 16x16 píxeis usando fer
 
 ---
 
-## Passo 14: Configurar o .gitignore
+## Passo 16: Configurar o .gitignore
 
 ### Ficheiro: `.gitignore`
 
@@ -1470,7 +1933,7 @@ data/
 
 ---
 
-## Passo 15: Compilar e Executar
+## Passo 17: Compilar e Executar
 
 Agora que tens todo o código pronto, é hora de compilar e executar o projeto.
 
@@ -1534,6 +1997,7 @@ npm start
 ```
 todo-calendar-electron/
 ├── electron/
+│   ├── notifications.js           # Gestão de notificações
 │   ├── main.js                    # Ponto de entrada do Electron
 │   ├── preload.js                 # Bridge seguro para Angular
 │   ├── ipc.js                     # Canais IPC
@@ -1562,6 +2026,11 @@ todo-calendar-electron/
 │       └── utils/
 │           ├── date-utils.ts      # Utilidades de data
 │           └── todo-validation.ts # Validação de tarefas
+├── scripts/
+│   └── seed-demo.js               # Popula dados de teste
+├── tests/
+│   ├── notifications.test.js      # Testes de notificações
+│   └── todo-validation.test.js    # Testes de validação
 ├── data/                          # Pasta para a base de dados (SQLite)
 ├── dist/                          # Ficheiros compilados (gerado automaticamente)
 ├── node_modules/                  # Dependências npm (gerado automaticamente)
